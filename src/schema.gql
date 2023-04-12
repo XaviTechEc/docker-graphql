@@ -17,9 +17,10 @@ type AggregationsType {
 }
 
 type Query {
-  """Hola Mundo es lo que retorna"""
+  """Basic function"""
   hello: String!
   randomNumber: Float!
+  randomNumber10: Int!
 
   """From zero to argument TO (default 6)"""
   randomFromZeroTo(to: Int): Int!
