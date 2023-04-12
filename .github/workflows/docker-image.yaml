@@ -1,0 +1,47 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build the Docker image
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Git Semantic Version
+        id: version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          tag_prefix: 'v'
+          major_pattern: 'MAJOR:'
+          minor_pattern: 'FEAT:'
+          format: '${mayor}.${minor}.${patch}-prerelease${increment}'
+
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+      - name: Docker Image Build
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker build -t xavierxtech/docker-graphql:$NEW_VERSION .
+          docker build -t xavierxtech/docker-graphql:latest .
+
+      - name: Docker Image Push
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker push xavierxtech/docker-graphql:$NEW_VERSION
+          docker push xavierxtech/docker-graphql: latest
